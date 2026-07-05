@@ -22,7 +22,7 @@ const ContactSchema = new mongoose.Schema({
     date: { type: Date, default: Date.now }
 });
 
-const Contact = mongoose.model('Contact', ContactSchema);
+const Contact = mongoose.model('Contact', ContactSchema); 
 
 // MongoDB Database Connectivity
 mongoose.connect(process.env.MONGODB_URI)
@@ -91,7 +91,8 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // Server Listening setup (Direct Port 5000 fix)
-const PORT_NUMBER = 5000;
-app.listen(PORT_NUMBER, function() {
-    console.log('Backend Server running smoothly on port 5000 🚀');
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log('Backend Server running on port ${PORT}');
 });

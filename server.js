@@ -25,7 +25,7 @@ const ContactSchema = new mongoose.Schema({
 const Contact = mongoose.model('Contact', ContactSchema);
 
 // MongoDB Database Connectivity
-mongoose.connect('mongodb://localhost:27017/portfolioDB')
+mongoose.connect(process.env.MONGODB_URI)
     .then(function() {
         console.log('Bhai, MongoDB Database successfully connect ho gaya! 🔥');
     })

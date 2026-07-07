@@ -33,14 +33,17 @@ mongoose.connect(process.env.MONGODB_URI)
         console.error('Database connection crash error:', err);
     });
 
-// ========================================================
-// 2. EMAIL CONFIGURATION (Nodemailer System)
-// ========================================================
+// NODEMAILER SYSTEM (Port 587 Bypass Fix)
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false 
     }
 });
 

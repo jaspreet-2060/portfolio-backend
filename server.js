@@ -71,11 +71,11 @@ app.post('/api/contact', async (req, res) => {
             await transporter.sendMail(mailOptions);
             console.log("Mail sent successfully! 📬");
         } catch (mailError) {
-            // Agar Render mail block kare, toh sirf yahan log aayega, server crash nahi hoga
+            // Mail fail ho tab bhi server nahi rukega
             console.error("Nodemailer side block (Render Network issue):", mailError.message);
         }
 
-        // Frontend ko hamesha success response bhejna taaki "server failure" popup na aaye
+        // Failsafe Response: Yeh line main try block ke end me closing bracket se theek pehle honi chahiye
         return res.status(200).json({ success: true, message: "Message sent successfully! 🎉" });
 
     } catch (error) {
@@ -83,6 +83,7 @@ app.post('/api/contact', async (req, res) => {
         return res.status(500).json({ success: false, message: "Internal Server Error!" });
     }
 });
+
 
 // Server Listening setup (Direct Port 5000 fix)
 const PORT = process.env.PORT || 5000;

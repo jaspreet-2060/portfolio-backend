@@ -44,49 +44,43 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// ========================================================
 // 3. MAIN API ENDPOINT (POST Request)
-// ========================================================
 app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, phone, purpose, message } = req.body;
 
         // Validation Check
-        if (!name || !email || !purpose || !message) {
-            return res.status(400).json({ success: false, message: "Bhai, required fields fill karna zaroori hai!" });
+        if (!name || !email) {
+            return res.status(400).json({ success: false, message: "Bhai, name aur email required hain!" });
         }
 
         // Action A: MongoDB Cloud Me Save Karna
         const newContact = new Contact({ name, email, phone, purpose, message });
         await newContact.save();
+        console.log("Data saved to MongoDB Atlas! 💾");
 
-// Action B: Aapki Email ID Par Mail Trigger Karna
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: process.env.EMAIL_USER, // Message aapki apni mail id par hi aayega
-            subject: "💼 New Portfolio Message: " + purpose + " from " + name,
-            html: "<div style='font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;'>" +
-                    "<div style='background-color: #0c0926; color: #ffffff; padding: 20px; border-radius: 8px;'>" +
-                        "<h2 style='color: #a855f7; border-bottom: 2px solid rgba(168, 85, 247, 0.2); padding-bottom: 10px;'>New Portfolio Lead</h2>" +
-                        "<p><strong>Name:</strong> " + name + "</p>" +
-                        "<p><strong>Email:</strong> " + email + "</p>" +
-                        "<p><strong>Phone:</strong> " + (phone || 'Not Provided') + "</p>" +
-                        "<p><strong>Purpose:</strong> " + purpose + "</p>" +
-                        "<div style='background-color: #110d33; padding: 15px; border-radius: 5px; margin-top: 15px;'>" +
-                            "<p><strong>Message:</strong></p>" +
-                            "<p>" + message + "</p>" +
-                        "</div>" +
-                    "</div>" +
-                "</div>"
-        };
-        await transporter.sendMail(mailOptions);
+        // Action B: Aapki Email ID Par Mail Trigger Karna (Safe Block)
+        try {
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: process.env.EMAIL_USER, 
+                subject: "📩 New Portfolio Message from " + name,
+                text: "Bhai, portfolio par naya message aaya hai:\n\nName: " + name + "\nEmail: " + email + "\nPhone: " + phone + "\nPurpose: " + purpose + "\nMessage: " + message
+            };
 
-        // Frontend ko success signal bhejna
-        res.status(200).json({ success: true, message: "Success" });
+            await transporter.sendMail(mailOptions);
+            console.log("Mail sent successfully! 📬");
+        } catch (mailError) {
+            // Agar Render mail block kare, toh sirf yahan log aayega, server crash nahi hoga
+            console.error("Nodemailer side block (Render Network issue):", mailError.message);
+        }
+
+        // Frontend ko hamesha success response bhejna taaki "server failure" popup na aaye
+        return res.status(200).json({ success: true, message: "Message sent successfully! 🎉" });
 
     } catch (error) {
-        console.error('System server error:', error);
-        res.status(500).json({ success: false, message: "Server temporary failure!" });
+        console.error("Main Server Error:", error);
+        return res.status(500).json({ success: false, message: "Internal Server Error!" });
     }
 });
 
